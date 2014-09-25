@@ -31,13 +31,14 @@ import os
 import struct
 
 from twitter.common import log
+from twitter.common.exceptions import ChainedException
 from twitter.common.lang import Compatibility, Interface
 
 from .filelike import FileLike
 
 
 class RecordIO(object):
-  class Error(Exception): pass
+  class Error(ChainedException): pass
   class PrematureEndOfStream(Error): pass
   class RecordSizeExceeded(Error): pass
   class InvalidTypeException(Error): pass
@@ -76,7 +77,7 @@ class RecordIO(object):
       try:
         self._fp = FileLike.get(fp)
       except ValueError as err:
-        raise RecordIO.InvalidFileHandle(err)
+        raise RecordIO.InvalidFileHandle(cause=err)
       if not isinstance(codec, RecordIO.Codec):
         raise RecordIO.InvalidCodec("Codec must be subclass of RecordIO.Codec")
       self._codec = codec

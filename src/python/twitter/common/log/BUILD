@@ -19,6 +19,7 @@ python_library(
   sources = rglobs('*.py'),
   dependencies = [
     pants('src/python/twitter/common/dirutil'),
+    pants('src/python/twitter/common/exceptions'),
     pants('src/python/twitter/common/options'),
   ],
   provides = setup_py(

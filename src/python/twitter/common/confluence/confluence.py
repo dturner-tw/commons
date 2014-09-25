@@ -21,6 +21,7 @@ import mimetypes
 import urllib
 
 from twitter.common import log
+from twitter.common.exceptions import ChainedException
 
 from os.path import basename
 
@@ -32,7 +33,7 @@ except ImportError:
 
 mimetypes.init()
 
-class ConfluenceError(Exception):
+class ConfluenceError(ChainedException):
   """Indicates a problem performing an action with confluence."""
 
 
@@ -76,7 +77,7 @@ class Confluence(object):
     try:
       return Confluence(api, confluence_url, api.login(user, password), fmt)
     except XMLRPCError as e:
-      raise ConfluenceError('Failed to log in to %s: %s' % (confluence_url, e))
+      raise ConfluenceError('Failed to log in to %s' % (confluence_url), cause=e)
 
   @staticmethod
   def get_url(server_url, wiki_space, page_title):
@@ -121,7 +122,7 @@ class Confluence(object):
     try:
       self._api_entrypoint.removePage(self._session_token, page)
     except XMLRPCError as e:
-      raise ConfluenceError('Failed to delete page: %s' % e)
+      raise ConfluenceError('Failed to delete page', cause=e)
 
   def create(self, space, title, content, parent_page=None, **pageoptions):
     """ Create a new confluence page with the given title and content.  Additional page options

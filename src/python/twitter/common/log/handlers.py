@@ -24,10 +24,12 @@ try:
 except ImportError:
   _SCRIBE_PRESENT = False
 
+from twitter.common.exceptions import ChainedException
+
 
 class ScribeHandler(Handler):
   """logging.Handler interface for Scribe."""
-  class ScribeHandlerException(Exception):
+  class ScribeHandlerException(ChainedException):
     pass
 
   def __init__(self, *args, **kwargs):
@@ -110,7 +112,7 @@ class ScribeHandler(Handler):
       if result != scribe.ResultCode.OK:
         raise self.ScribeHandlerException('Scribe message submission failed')
     except TTransport.TTransportException as err:
-      raise self.ScribeHandlerException('Could not connect to scribe host=%s:%s error=%s'
-                                        % (self._host, self._port, err))
+      raise self.ScribeHandlerException('Could not connect to scribe host=%s:%s'
+                                        % (self._host, self._port), cause=err)
     finally:
       self.transport.close()

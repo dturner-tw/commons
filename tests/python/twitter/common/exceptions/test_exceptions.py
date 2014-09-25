@@ -20,7 +20,7 @@ from collections import namedtuple
 from contextlib import contextmanager
 from Queue import Queue
 
-from twitter.common.exceptions import ExceptionalThread
+from twitter.common.exceptions import ChainedException, ExceptionalThread
 
 
 class TestException(Exception):
@@ -73,3 +73,31 @@ def test_exception_swallowed():
     thread.join()
     assert queue.empty()
   assert sys.excepthook == sys.__excepthook__
+
+
+def test_chained_exception():
+  def throws_div0():
+    return 1 / 0
+  def wraps_exception():
+    try:
+      throws_div0()
+    except ZeroDivisionError as e:
+      return ChainedException("my own wrapper", cause=e)
+  try:
+    wraps_exception()
+  except Exception, e:
+    err_str = str(e)
+    assert "ZeroDivisionError" in err_str
+    assert "throws_div0" in err_str
+
+  def wraps_exception_no_cause():
+    try:
+      throws_div0()
+    except ZeroDivisionError as e:
+      return ChainedException("my own wrapper")
+  try:
+    wraps_exception_no_cause()
+  except Exception, e:
+    err_str = str(e)
+    assert "ZeroDivisionError" not in err_str
+    assert "throws_div0" not in err_str

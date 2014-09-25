@@ -20,6 +20,7 @@ import errno
 import os
 
 from twitter.common import log
+from twitter.common.exceptions import ChainedException
 
 
 # TODO(wickman) This needs to be py 3.x friendly.
@@ -42,7 +43,7 @@ _VALID_STRINGIO_CLASSES = tuple(_VALID_STRINGIO_CLASSES)
 
 
 class FileLike(object):
-  class Error(Exception): pass
+  class Error(ChainedException): pass
 
   @staticmethod
   def get(fp):
@@ -74,7 +75,7 @@ class FileLike(object):
       except OSError as e:
         if e.errno != errno.EBADF:
           log.error('Failed to close duped fd on %s, error = %s' % (self._fp.name, e))
-      raise self.Error('Failed to dup %s' % self._fp)
+      raise self.Error('Failed to dup %s' % self._fp, cause=e)
     return FileLike(cur_fp)
 
   def read(self, length):

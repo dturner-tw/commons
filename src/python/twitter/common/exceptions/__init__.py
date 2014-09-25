@@ -128,3 +128,19 @@ class ExceptionalThread(threading.Thread):
       raise
     except:
       sys.excepthook(*sys.exc_info())
+
+
+class ChainedException(Exception):
+  """ChainedException is an exception with java-style exception chaining."""
+  def __init__(self, *args, **kwargs):
+    if 'cause' in kwargs:
+      self.cause = kwargs.pop('cause')
+      self.cause_traceback = traceback.format_exc(self.cause)
+    super(ChainedException, self).__init__(*args, **kwargs)
+
+  def __str__(self):
+    base_str = super(ChainedException, self).__str__()
+    if self.cause is not None:
+      return base_str + " \nCaused by:\n" + self.cause_traceback
+    else:
+      return base_str
